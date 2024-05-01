@@ -1,0 +1,5 @@
+# Se requiere python3.10
+langchain
+langchain_openai
+pypdf
+chromadb
