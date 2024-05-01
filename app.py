@@ -14,13 +14,19 @@ def initialize_session_state():
     try:
         with open(file_path, "rb") as file:
             session_state_data = pickle.load(file)
-            st.session_state.chat_history = session_state_data.get("chat_history", [])
-            st.session_state.current_chat = session_state_data.get("current_chat", 1)
-            st.session_state.chat_number = session_state_data.get("chat_number", 1)
+            if "chat_history" in session_state_data:
+                st.session_state.chat_history = session_state_data["chat_history"]
+            if "current_chat" not in st.session_state:
+                st.session_state.current_chat = 1
+            if "chat_number" in session_state_data:
+                st.session_state.chat_number = session_state_data["chat_number"]
     except FileNotFoundError:
-        st.session_state.chat_history = []
-        st.session_state.current_chat = 1
-        st.session_state.chat_number = 1
+        if "chat_history" not in st.session_state:
+            st.session_state.chat_history = []
+        if "current_chat" not in st.session_state:
+            st.session_state.current_chat = 1
+        if "chat_number" not in st.session_state:
+            st.session_state.chat_number = 1
 
 initialize_session_state()
 
