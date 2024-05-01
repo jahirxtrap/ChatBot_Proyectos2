@@ -1,5 +1,14 @@
 import streamlit as st
+
 st.set_page_config(layout="wide", page_icon="./media/logo.png", page_title="Chatbot PT2")
+
+# Sesiones/variables
+def initialize_session_state():
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
+        st.session_state.current_chat = 1
+        st.session_state.chat_number = 1
+initialize_session_state()
 
 # Respuestas del Chatbot
 def get_bot_response(prompt):
@@ -8,26 +17,24 @@ def get_bot_response(prompt):
     return "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In feugiat metus risus, et mollis nunc blandit eu. Duis sit amet ligula id elit mollis commodo sed a massa. Integer rhoncus pharetra ex, non condimentum justo tempor et. Sed sed diam."
 
 # Mensaje
-def message(prompt):
-    st.session_state.chat_history.append(("user", prompt))
+def message(chat, prompt):
+    st.session_state.chat_history.append((chat, "user", prompt))
     bot_response = get_bot_response(prompt)
-    st.session_state.chat_history.append(("ai", bot_response))
-
-# Inicializar el estado de la sesión
-def initialize_session_state():
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
-initialize_session_state()
+    st.session_state.chat_history.append((chat, "ai", bot_response))
 
 # Barra lateral
 st.sidebar.image("./media/banner.png", use_column_width=True)
 st.sidebar.header("Chatbot PT2")
-st.sidebar.button("Nuevo chat", use_container_width=True)
+if st.sidebar.button("Nuevo chat", use_container_width=True, key="new_chat"):
+    st.session_state.chat_number += 1
+    st.session_state.current_chat = st.session_state.chat_number
 st.sidebar.divider()
 st.sidebar.header("Historial")
-st.sidebar.button("Chat 1", use_container_width=True)
-st.sidebar.button("Chat 2", use_container_width=True)
-st.sidebar.button("Chat 3", use_container_width=True)
+for n in range(st.session_state.chat_number):
+    chat_title = "Chat {}".format(n + 1)
+    if st.sidebar.button(chat_title, use_container_width=True):
+        st.session_state.current_chat = n + 1
+st.header("Chat {}".format(st.session_state.current_chat))
 # Mensaje de bienvenida
 with st.chat_message("ai"):
     st.write("¡Hola! Soy un chatbot. ¿En qué puedo ayudarte hoy?")
@@ -42,15 +49,16 @@ user_input = st.chat_input("Mensaje Chatbot...", max_chars=100)
 
 # Enviar mensajes
 if col1.button(button_1, use_container_width=True):
-    message(button_1)
+    message(st.session_state.current_chat, button_1)
 if col2.button(button_2, use_container_width=True):
-    message(button_2)
+    message(st.session_state.current_chat, button_2)
 if col3.button(button_3, use_container_width=True):
-    message(button_3)
+    message(st.session_state.current_chat, button_3)
 if user_input:
-    message(user_input)
+    message(st.session_state.current_chat, user_input)
 
 # Historial
-for sender, message in st.session_state.chat_history:
-    with st.chat_message(sender):
-        st.write(message)
+for n, sender, message in st.session_state.chat_history:
+    if n == st.session_state.current_chat:
+        with st.chat_message(sender):
+            st.write(message)
