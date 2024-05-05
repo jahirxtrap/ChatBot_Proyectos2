@@ -1,9 +1,23 @@
 import streamlit as st
+from judini.codegpt import CodeGPTPlus
+from dotenv import load_dotenv
 import pickle
 import os
+load_dotenv()
 
 # Configuración de la página
-st.set_page_config(layout="wide", page_icon="./media/logo.png", page_title="Chatbot PT2")
+st.set_page_config(layout="wide", page_icon="./media/logo.png", page_title="Asistente de Titulación UNL")
+
+# Conectar con CodeGPT
+if os.path.exists(".env"):
+    api_key= os.getenv('CODEGPT_API_KEY')
+    agent_id= os.getenv('CODEGPT_AGENT_ID')
+    org_id= os.getenv('ORG_ID')
+else:
+    api_key= st.secrets['CODEGPT_API_KEY']
+    agent_id= st.secrets['CODEGPT_AGENT_ID']
+    org_id= st.secrets['ORG_ID']
+codegpt = CodeGPTPlus(api_key=api_key, org_id=org_id)
 
 # Inicialización de sesiones/variables
 def initialize_session_state():
@@ -40,9 +54,17 @@ def save_session_state():
 
 # Respuestas del Chatbot
 def get_bot_response(prompt):
-    # lógica del chatbot
-    # Por ahora, simplemente devolveremos una respuesta estática
-    return "Lorem ipsum dolor sit amet, consectetur adipiscing elit. In feugiat metus risus, et mollis nunc blandit eu. Duis sit amet ligula id elit mollis commodo sed a massa. Integer rhoncus pharetra ex, non condimentum justo tempor et. Sed sed diam."
+    try:
+        messages = [{"role": "user", "content": msg} for _, role, msg in st.session_state.chat_history if role == "user"]
+        messages.append({"role": "user", "content": prompt})
+
+        response_completion = codegpt.chat_completion(agent_id=agent_id, messages=messages, stream=False)
+
+        full_response = response_completion if response_completion else "Disculpa, no pude procesar tu mensaje."
+    except Exception as e:
+        full_response = "Error al procesar la respuesta: {}".format(str(e))
+    
+    return full_response
 
 # Función para enviar mensaje
 def message(chat, prompt):
@@ -52,47 +74,47 @@ def message(chat, prompt):
     save_session_state()
 
 # Barra lateral
-st.sidebar.image("./media/banner.png", use_column_width=True)
-st.sidebar.header("Chatbot PT2")
+with st.sidebar:
+    st.image("./media/banner.png", use_column_width=True)
+    st.header("Asistente de Titulación UNL")
 
-# Botón nuevo chat
-if st.sidebar.button("Nuevo chat", use_container_width=True):
-    st.session_state.chat_number += 1
-    st.session_state.current_chat = st.session_state.chat_number
-    save_session_state()
-st.sidebar.divider()
+    # Botón nuevo chat
+    if st.button("Nuevo chat", use_container_width=True):
+        st.session_state.chat_number += 1
+        st.session_state.current_chat = st.session_state.chat_number
+        save_session_state()
+    st.divider()
 
-# Historial de chats
-st.sidebar.header("Historial")
-for n in range(st.session_state.chat_number):
-    chat_title = "Chat {}".format(n + 1)
-    if st.sidebar.button(chat_title, use_container_width=True):
-        st.session_state.current_chat = n + 1
-st.sidebar.divider()
+    # Historial de chats
+    st.header("Historial")
+    for n in range(st.session_state.chat_number):
+        chat_title = "Chat {}".format(n + 1)
+        if st.button(chat_title, use_container_width=True):
+            st.session_state.current_chat = n + 1
+    st.divider()
 
-# Botón eliminar historial
-if st.sidebar.button("Eliminar Historial", use_container_width=True):
-    if os.path.exists("./data/chats"):
-        st.session_state.chat_history = []
-        st.session_state.chat_number = 1
-        os.remove("./data/chats")
-        st.experimental_rerun()
-st.header("Chat {}".format(st.session_state.current_chat))
-st.divider()
+    # Botón eliminar historial
+    if st.button("Eliminar Historial", use_container_width=True):
+        if os.path.exists("./data/chats"):
+            st.session_state.chat_history = []
+            st.session_state.chat_number = 1
+            os.remove("./data/chats")
+            st.rerun()
 
 # Bienvenida
-with st.chat_message("ai"):
-    st.write("¡Hola! Soy un chatbot. ¿En qué puedo ayudarte hoy?")
+st.divider()
+with st.chat_message("ai", avatar="./media/bot_icon.png"):
+    st.write("Hola, soy un Bot de ayuda para consultas sobre temas de proyectos de integración curricular. ¿En qué puedo ayudarte hoy?")
 
 # Preguntas recomendadas
 col1, col2, col3 = st.columns(3)
-q1 = "Pregunta 1"
-q2 = "Pregunta 2"
-q3 = "Pregunta 3"
+q1 = "Que es el PIS o proyectos de integración de saberes?"
+q2 = "Cual es el propósito de la guía para la escritura y presentación del informe del trabajo de integración curricular o de titulación?"
+q3 = "Cual es la estructura del proyecto de investigación de integración curricular o de titulación?"
 st.divider()
 
 # Entrada del usuario
-user_input = st.chat_input("Mensaje Chatbot...", max_chars=100)
+user_input = st.chat_input("Mensaje Chatbot...", max_chars=500)
 
 # Enviar mensajes
 if col1.button(q1, use_container_width=True):
@@ -107,5 +129,9 @@ if user_input:
 # Mostrar mensajes
 for n, sender, message in st.session_state.chat_history:
     if n == st.session_state.current_chat:
-        with st.chat_message(sender):
-            st.write(message)
+        if sender == "ai":
+            with st.chat_message(sender, avatar="./media/bot_icon.png"):
+                st.write(message)
+        elif sender == "user":
+            with st.chat_message(sender):
+                st.write(message)

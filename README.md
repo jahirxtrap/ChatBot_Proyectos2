@@ -1,4 +1,4 @@
-# Chatbot para Proyectos Tecnológicos usando OpenAI API
+# Chatbot usando CodeGPT API
 
 ### Requerimientos
 
@@ -8,9 +8,14 @@
 pip install -r requirements.txt
 ```
 
-2. Configurar su clave de API de OpenAI:
-   * Cree un archivo llamado `api_key.txt` en la raíz del proyecto.
-   * Inserte su clave de API de OpenAI dentro de este archivo. Si aún no tiene una, puede generarla [aquí](https://platform.openai.com/api-keys).
+2. Configurar su clave de API de CodeGPT:
+   * Cree un archivo llamado `.env` en la raíz del proyecto e incluya las siguientes variables:
+   ```makefile
+   CODEGPT_API_KEY=
+   CODEGPT_AGENT_ID=
+   ORG_ID=
+   ```
+   * Complete el archivo con su clave de API, ID de Agente e ID de Organización de CodeGPT. Si aún no tiene una, puede generarla [aquí](https://app.codegpt.co/es/apikeys).
 
 ### Ejecución
 
