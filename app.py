@@ -1,12 +1,18 @@
 import streamlit as st
 from judini.codegpt import CodeGPTPlus
 from dotenv import load_dotenv
+import random
 import pickle
 import os
 load_dotenv()
 
 # Configuración de la página
 st.set_page_config(layout="wide", page_icon="./media/logo.png", page_title="Asistente de Titulación UNL")
+
+# Cargar o crear directorio de datos
+data_dir = "./data/"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
 # Conectar con CodeGPT
 if os.path.exists(".env"):
@@ -21,12 +27,8 @@ codegpt = CodeGPTPlus(api_key=api_key, org_id=org_id)
 
 # Inicialización de sesiones/variables
 def initialize_session_state():
-    data_dir = "./data/"
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    file_path = os.path.join(data_dir, "chats")
     try:
-        with open(file_path, "rb") as file:
+        with open(os.path.join(data_dir, "chats"), "rb") as file:
             session_state_data = pickle.load(file)
             if "chat_history" in session_state_data:
                 st.session_state.chat_history = session_state_data["chat_history"]
@@ -107,10 +109,18 @@ with st.chat_message("ai", avatar="./media/bot_icon.png"):
     st.write("Hola, soy un Bot de ayuda para consultas sobre temas de proyectos de integración curricular. ¿En qué puedo ayudarte hoy?")
 
 # Preguntas recomendadas
+try:
+    with open(os.path.join(data_dir, "questions"), "rb") as file:
+        lines = file.readlines()
+        lines = [line.decode('utf-8').strip() for line in lines]
+    random.shuffle(lines)
+    q1, q2, q3 = lines[0], lines[1], lines[2]
+except FileNotFoundError:
+    q1 = "Que es el PIS o proyectos de integración de saberes?"
+    q2 = "Cual es el propósito de la guía para la escritura y presentación del informe del trabajo de integración curricular o de titulación?"
+    q3 = "Cual es la estructura del proyecto de investigación de integración curricular o de titulación?"
+
 col1, col2, col3 = st.columns(3)
-q1 = "Que es el PIS o proyectos de integración de saberes?"
-q2 = "Cual es el propósito de la guía para la escritura y presentación del informe del trabajo de integración curricular o de titulación?"
-q3 = "Cual es la estructura del proyecto de investigación de integración curricular o de titulación?"
 st.divider()
 
 # Entrada del usuario

@@ -7,4 +7,4 @@ ipython_config.py
 
 # Chatbot
 .env
-data/
+data/chats
