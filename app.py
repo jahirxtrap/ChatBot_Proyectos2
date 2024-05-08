@@ -117,7 +117,7 @@ with st.chat_message("ai", avatar="./media/bot_icon.png"):
 
 # Preguntas recomendadas y entrada de usuario
 col1, col2, col3 = st.columns(3)
-q1 = "¿Qué es el PIS o proyectos de integración de saberes?"
+q1 = "¿Cuál es el fundamento de los proyectos de integración de saberes?"
 q2 = "¿Cuál es el propósito de la guía para la escritura y presentación del informe del trabajo de integración curricular o de titulación?"
 q3 = "¿Cuál es la estructura del proyecto de investigación de integración curricular o de titulación?"
 with col1:
