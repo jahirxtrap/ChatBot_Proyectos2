@@ -1,4 +1,4 @@
-# Chatbot usando CodeGPT API
+# Chatbot usando CodeGPT y StackAI API
 
 ### Requerimientos
 
@@ -16,6 +16,14 @@ pip install -r requirements.txt
    ORG_ID=
    ```
    * Complete el archivo con su clave de API, ID de Agente e ID de Organización de CodeGPT. Si aún no tiene una, puede generarla [aquí](https://app.codegpt.co/es/apikeys).
+
+3. Configurar su clave de API de StackAI:
+   * En el archivo `.env` ubicado en la raíz del proyecto incluya las siguientes variables:
+   ```makefile
+   STACK_API_URL=
+   STACK_AUTH=
+   ```
+   * Complete el archivo con su url de API y token de Autenticación de StackAI. Si aún no tiene una, puede generarla [aquí](https://www.stack-ai.com/dashboard).
 
 ### Ejecución
 

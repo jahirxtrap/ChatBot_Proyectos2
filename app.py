@@ -1,6 +1,7 @@
 import streamlit as st
 from judini.codegpt import CodeGPTPlus
 from dotenv import load_dotenv
+import requests
 import random
 import pickle
 import os
@@ -25,6 +26,18 @@ else:
     org_id= st.secrets['ORG_ID']
 codegpt = CodeGPTPlus(api_key=api_key, org_id=org_id)
 
+# Conectar con StackAI
+if os.path.exists(".env"):
+    api_url= os.getenv('STACK_API_URL')
+    auth= os.getenv('STACK_AUTH')
+else:
+    api_url= st.secrets['STACK_API_URL']
+    auth= st.secrets['STACK_AUTH']
+headers = {
+    'Authorization': auth,
+    'Content-Type': 'application/json'
+}
+
 # Recomendaciones aleatorias
 def random_questions():
     try:
@@ -47,8 +60,6 @@ def initialize_session_state():
             session_state_data = pickle.load(file)
             if "chat_history" in session_state_data:
                 st.session_state.chat_history = session_state_data["chat_history"]
-            if "current_chat" not in st.session_state:
-                st.session_state.current_chat = 1
             if "chat_number" in session_state_data:
                 st.session_state.chat_number = session_state_data["chat_number"]
             if "questions" in session_state_data:
@@ -56,12 +67,14 @@ def initialize_session_state():
     except FileNotFoundError:
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = []
-        if "current_chat" not in st.session_state:
-            st.session_state.current_chat = 1
         if "chat_number" not in st.session_state:
             st.session_state.chat_number = 1
         if "questions" not in st.session_state:
             st.session_state.questions = random_questions()
+    if "current_chat" not in st.session_state:
+        st.session_state.current_chat = 1
+    if "api" not in st.session_state:
+        st.session_state.api = 1
 
 initialize_session_state()
 
@@ -76,13 +89,31 @@ def save_session_state():
 
 # Respuestas del Chatbot
 def get_bot_response(prompt):
-    try:
-        messages = [{"role": "user", "content": msg} for _, role, msg in st.session_state.chat_history if role == "user"]
-        messages.append({"role": "user", "content": prompt})
-        response_completion = codegpt.chat_completion(agent_id=agent_id, messages=messages, stream=False)
-        full_response = response_completion if response_completion else "Disculpa, no pude procesar tu mensaje."
-    except Exception as e:
-        full_response = "Error al procesar la respuesta: {}".format(str(e))
+    # CodeGPT
+    if st.session_state.api==1:
+        try:
+            messages = [{"role": "user", "content": msg} for _, role, msg in st.session_state.chat_history if role == "user"]
+            messages.append({"role": "user", "content": prompt})
+            response_completion = codegpt.chat_completion(agent_id=agent_id, messages=messages, stream=False)
+            full_response = response_completion if response_completion else "Disculpa, no pude procesar tu mensaje."
+        except Exception as e:
+            full_response = "Error al procesar la respuesta: {}".format(str(e))
+    # StackAI
+    elif st.session_state.api==2:
+        payload = {
+            "in-0": prompt,
+            "user_id": str(st.session_state.current_chat)
+        }
+        try:
+            response = requests.post(api_url, headers=headers, json=payload)
+            if response.status_code == 200:
+                data = response.json()
+                full_response = data['outputs']['out-0'] if 'outputs' in data and 'out-0' in data['outputs'] else "No se encontró respuesta."
+            else:
+                full_response = f"Error al conectar con la API: {response.status_code} - {response.text}"
+        except Exception as e:
+            full_response = f"Error al procesar la respuesta: {str(e)}"
+
     return full_response
 
 # Función para mostrar mensajes
@@ -114,6 +145,12 @@ with st.sidebar:
         st.session_state.current_chat = st.session_state.chat_number
         st.session_state.questions = random_questions()
         save_session_state()
+
+    # Cambiar API
+    if st.selectbox('Seleccionar API:', ('CodeGPT', 'StackAI')) == "CodeGPT":
+        st.session_state.api = 1
+    else:
+        st.session_state.api = 2
     st.divider()
 
     # Historial de chats
