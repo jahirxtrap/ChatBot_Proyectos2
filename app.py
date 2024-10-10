@@ -170,7 +170,7 @@ with st.sidebar:
         save_session_state()
 
     # Cambiar API
-    box = st.selectbox('Seleccionar API:', ('VectorShift', 'CodeGPT', 'StackAI'))
+    box = st.selectbox('Seleccionar API:', ('VectorShift', 'StackAI'))
     if box == "VectorShift":
         st.session_state.api = 1
     elif box == "CodeGPT":
