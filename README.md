@@ -8,8 +8,15 @@
 pip install -r requirements.txt
 ```
 
-2. Configurar su clave de API de CodeGPT:
+2. Configurar su clave de API de VectorShift:
    * Cree un archivo llamado `.env` en la raíz del proyecto e incluya las siguientes variables:
+   ```makefile
+   VECTORSHIFT_API_KEY=
+   ```
+   * Complete el archivo con su clave de API de VectorShift. Si aún no tiene una, puede generarla [aquí](https://app.vectorshift.ai/chatbots).
+
+3. Configurar su clave de API de CodeGPT:
+   * En el archivo `.env` ubicado en la raíz del proyecto incluya las siguientes variables:
    ```makefile
    CODEGPT_API_KEY=
    CODEGPT_AGENT_ID=
@@ -17,7 +24,7 @@ pip install -r requirements.txt
    ```
    * Complete el archivo con su clave de API, ID de Agente e ID de Organización de CodeGPT. Si aún no tiene una, puede generarla [aquí](https://app.codegpt.co/es/apikeys).
 
-3. Configurar su clave de API de StackAI:
+4. Configurar su clave de API de StackAI:
    * En el archivo `.env` ubicado en la raíz del proyecto incluya las siguientes variables:
    ```makefile
    STACK_API_URL=

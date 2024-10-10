@@ -15,6 +15,16 @@ data_dir = "./data/"
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
+# Conectar con VectorShift
+if os.path.exists(".env"):
+    vector_api_key= os.getenv('VECTORSHIFT_API_KEY')
+else:
+    vector_api_key= st.secrets['VECTORSHIFT_API_KEY']
+vector_url = "https://api.vectorshift.ai/api/chatbots/run"
+vector_headers = {
+    "Api-Key": vector_api_key,
+}
+
 # Conectar con CodeGPT
 if os.path.exists(".env"):
     api_key= os.getenv('CODEGPT_API_KEY')
@@ -89,8 +99,21 @@ def save_session_state():
 
 # Respuestas del Chatbot
 def get_bot_response(prompt):
-    # CodeGPT
+    # VectorShift
     if st.session_state.api==1:
+        try:
+            body = {
+                "input": prompt,
+                "chatbot_name": "ChatBotAcademico",
+                "username": "diegolojan",
+                "conversation_id": None
+            }
+            response = requests.post(vector_url, headers=vector_headers, data=body)
+            full_response = response.json().get("output", "Error al procesar la respuesta.")
+        except Exception as e:
+            full_response = "Error al procesar la respuesta: {}".format(str(e))
+    # CodeGPT
+    if st.session_state.api==2:
         try:
             messages = [{"role": "user", "content": msg} for _, role, msg in st.session_state.chat_history if role == "user"]
             messages.append({"role": "user", "content": prompt})
@@ -99,7 +122,7 @@ def get_bot_response(prompt):
         except Exception as e:
             full_response = "Error al procesar la respuesta: {}".format(str(e))
     # StackAI
-    elif st.session_state.api==2:
+    elif st.session_state.api==3:
         payload = {
             "in-0": prompt,
             "user_id": str(st.session_state.current_chat)
@@ -147,10 +170,13 @@ with st.sidebar:
         save_session_state()
 
     # Cambiar API
-    if st.selectbox('Seleccionar API:', ('CodeGPT', 'StackAI')) == "CodeGPT":
+    box = st.selectbox('Seleccionar API:', ('VectorShift', 'CodeGPT', 'StackAI'))
+    if box == "VectorShift":
         st.session_state.api = 1
-    else:
+    elif box == "CodeGPT":
         st.session_state.api = 2
+    elif box == "StackAI":
+        st.session_state.api = 3
     st.divider()
 
     # Historial de chats
