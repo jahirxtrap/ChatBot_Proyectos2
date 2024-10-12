@@ -157,6 +157,9 @@ def message(chat, prompt):
     save_session_state()
     st.rerun()
 
+# Mapas interactivos
+map_placeholder = st.container()
+
 # Barra lateral
 with st.sidebar:
     st.image("./media/banner.png", use_column_width=True)
@@ -168,6 +171,24 @@ with st.sidebar:
         st.session_state.current_chat = st.session_state.chat_number
         st.session_state.questions = random_questions()
         save_session_state()
+    
+    # Botón mapas interactivos
+    with st.expander("Mapas interactivos", expanded=False):
+        if st.button("Sustentación del TIC", use_container_width=True):
+            with map_placeholder:
+                st.components.v1.html(open('markmap/mapa1_Sustentacion.html', encoding='utf-8').read(), height=600)
+        if st.button("Requisitos y documentos para graduación y titulación", use_container_width=True):
+            with map_placeholder:
+                st.components.v1.html(open('markmap/mapa2_RequisitosGraduacion.html', encoding='utf-8').read(), height=600)
+        if st.button("Proceso de elaboración del TIC", use_container_width=True):
+            with map_placeholder:
+                st.components.v1.html(open('markmap/mapa3_ProcesoElaboracionTIC.html', encoding='utf-8').read(), height=600)
+        if st.button("Modalidades de titulación en la UNL", use_container_width=True):
+            with map_placeholder:
+                st.components.v1.html(open('markmap/mapa4_Modalidades.html', encoding='utf-8').read(), height=600)
+        if st.button("Guía de formulación del Proyecto de Investigación", use_container_width=True):
+            with map_placeholder:
+                st.components.v1.html(open('markmap/mapa5_Estructura.html', encoding='utf-8').read(), height=600)
 
     # Cambiar API
     box = st.selectbox('Seleccionar API:', ('VectorShift', 'StackAI'))
